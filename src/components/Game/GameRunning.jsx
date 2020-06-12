@@ -12,7 +12,7 @@ export default function GameRunning({
   const Loading = <>Loading...</>;
   return (
     <div>
-      <p>The word is {transWord}</p>
+      <p>{transWord}</p>
       {isLoading ? (
         Loading
       ) : (

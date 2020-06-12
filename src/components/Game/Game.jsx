@@ -41,7 +41,7 @@ export default class Game extends Component {
             associatedWords={associatedWords}
             word={word}
             playGame={this.playGame}
-            resetIsStarted={this.resetIsStarted}
+            resetIsStarted={this.changeIsStarted}
             openAlert={openAlert}
             alertMessage={alertMessage}
           />
@@ -50,7 +50,7 @@ export default class Game extends Component {
             name={name}
             language={language}
             handleSelectedLanguage={this.handleSelectedLanguage}
-            handleStart={this.handleStart}
+            handleStart={this.changeIsStarted}
             enoughWordsToPlay={enoughWordsToPlay}
           />
         )}
@@ -63,20 +63,15 @@ export default class Game extends Component {
   };
 
   componentDidUpdate = (prevProps, prevState) => {
-    // console.log("update called");
-
     if (prevState.word !== this.state.word) {
-      console.log("new word");
       this.getAssociatedWords();
     }
 
     if (prevState.language !== this.state.language) {
-      console.log("new language");
       this.getWord();
     }
 
     if (this.state.alertMessage !== null) {
-      console.log("set time out");
       this.onTimeout();
     }
   };
@@ -100,10 +95,12 @@ export default class Game extends Component {
         randomListItem++;
       }
     }
+    if (wordsLength <= 1) {
+      randomListItem = 0;
+    }
     return randomListItem;
   };
 
-  // Rename to setNewWord or something more semantic?
   getWord = () => {
     const { words } = this.props;
     const { language } = this.state;
@@ -143,13 +140,13 @@ export default class Game extends Component {
       });
   };
 
-  handleSelectedLanguage = (event) => {
-    const { value } = event.target;
+  handleSelectedLanguage = ({ target }) => {
+    const { value } = target;
     this.setState({ language: value });
   };
 
-  playGame = (e) => {
-    const idTarget = e.target.id.toLowerCase();
+  playGame = ({ target }) => {
+    const idTarget = target.id.toLowerCase();
     if (idTarget === this.state.word) {
       this.setState({
         openAlert: true,
@@ -163,14 +160,10 @@ export default class Game extends Component {
     }
   };
 
-  // refactor these two functions to pass in true or false?
-  handleStart = (e) => {
-    this.setState({ isStarted: true });
-  };
-
-  // see above
-  resetIsStarted = () => {
-    this.setState({ isStarted: false });
+  changeIsStarted = () => {
+    this.setState((currentState) => {
+      return { isStarted: !currentState.isStarted };
+    });
   };
 }
 

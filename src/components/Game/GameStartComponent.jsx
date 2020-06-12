@@ -5,12 +5,13 @@ export default function GameStartComponent({
   language,
   handleSelectedLanguage,
   handleStart,
+  enoughWordsToPlay,
 }) {
   return (
     <div>
       <h3>Game {name}</h3>
       <p>Language: {language}</p>
-      <label htmlFor="languages">Choose a language:  </label>
+      <label htmlFor="languages">Choose a language: </label>
       <select
         name="languages"
         onChange={(e) => handleSelectedLanguage(e)}
@@ -23,13 +24,10 @@ export default function GameStartComponent({
         <option value="Spanish">Spanish</option>
       </select>
       <br />
-      {language === "Spanish" && (
-        <p>
-          You must have more than two words translated in {language} to play the
-          game
-        </p>
+      {!enoughWordsToPlay && (
+        <p>Translate more {language} words to play the game!</p>
       )}
-      <button onClick={(e) => handleStart(e)} disabled={language === "Spanish"}>
+      <button onClick={(e) => handleStart(e)} disabled={!enoughWordsToPlay}>
         Start
       </button>
     </div>
