@@ -1,26 +1,34 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import "./App.css";
+import Game from "./components/Game";
+import React, { Component } from "react";
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+export default class App extends Component {
+  state = {
+    name: "testuser1",
+    words: {
+      German: [
+        { cat: "die Katze" },
+        { pig: "Schwein" },
+        { sheep: "Schaf" },
+        { cow: "Kuh" },
+        { dog: "Hund" },
+      ],
+      French: [
+        { cat: "le chat" },
+        { pig: "truie" },
+        { sheep: "brebis" },
+        { cow: "vache" },
+        { dog: "chien" },
+      ],
+      Spanish: [{ cat: "die Katze" }],
+    },
+  };
+  render() {
+    const { words, name } = this.state;
+    return (
+      <div className="App">
+        <Game name={name} words={words} />
+      </div>
+    );
+  }
 }
-
-export default App;
