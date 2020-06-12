@@ -12,10 +12,18 @@ export default class Game extends Component {
     wordIndex: null,
     isLoading: false,
     isStarted: false,
+    openAlert: false,
+    alertMessage: "",
   };
 
   componentDidMount = () => {
     this.getWord();
+  };
+
+  onTimeout = () => {
+    setTimeout(() => {
+      this.setState({ openAlert: false });
+    }, 2000);
   };
 
   getRandomIndex = () => {
@@ -33,11 +41,10 @@ export default class Game extends Component {
 
     const randomListItem = this.getRandomIndex();
 
-    const word = Object.entries(words[language][randomListItem]).flat([1])[0];
-    const transWord = Object.entries(words[language][randomListItem]).flat([
-      1,
-    ])[1];
-    ///
+    const word = `${Object.keys(words[language][randomListItem])}`;
+    console.log(word);
+    const transWord = `${Object.values(words[language][randomListItem])}`;
+
     this.setState((currentState) => {
       return {
         word: word,
@@ -48,8 +55,6 @@ export default class Game extends Component {
   };
 
   componentDidUpdate = (prevProps, prevState) => {
-    console.log("updating");
-
     if (prevState.word !== this.state.word) {
       this.getAssociatedWords();
     }
@@ -57,10 +62,14 @@ export default class Game extends Component {
       prevState.wordIndex === this.state.wordIndex &&
       this.state.isLoading === true
     ) {
-      this.getWord();
+      console.log("wordIndex");
+      this.setState({ isLoading: false });
     }
     if (prevState.language !== this.state.language) {
       this.getWord();
+    }
+    if (prevState.openAlert !== this.state.openAlert) {
+      this.onTimeout();
     }
   };
 
@@ -72,7 +81,7 @@ export default class Game extends Component {
       filter: "noun",
     };
     axios
-      .post("https://langsnap-be.herokuapp.com/api/associations", body)
+      .post("https://langsnap-be.herokuapp.com/api/associations/game", body)
       .then((res) => {
         const { wordsArray } = res.data.message;
         this.setState((currentState) => {
@@ -90,6 +99,18 @@ export default class Game extends Component {
   };
 
   playGame = (e) => {
+    const idTarget = e.target.id.toLowerCase();
+    if (idTarget === this.state.word) {
+      this.setState({
+        openAlert: true,
+        alertMessage: `${idTarget} well done!`,
+      });
+    } else {
+      this.setState({
+        openAlert: true,
+        alertMessage: `${idTarget} wrong!`,
+      });
+    }
     this.getWord();
   };
 
@@ -110,6 +131,8 @@ export default class Game extends Component {
       isLoading,
       isStarted,
       language,
+      openAlert,
+      alertMessage,
     } = this.state;
     const { words } = this.props;
 
@@ -125,6 +148,8 @@ export default class Game extends Component {
             word={word}
             playGame={this.playGame}
             resetIsStarted={this.resetIsStarted}
+            openAlert={openAlert}
+            alertMessage={alertMessage}
           />
         ) : (
           <GameStartComponent
@@ -140,11 +165,8 @@ export default class Game extends Component {
   }
 }
 
-
-// create new route & deploy backend to return the correct word in the array.
-
+// displaying same word twice..
 // component updating errors mystery bug.
-// win loss components.
 
 //Refactor at some point.
 // sort array destructuring / data manipulation.

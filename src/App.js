@@ -27,7 +27,7 @@ export default class App extends Component {
     const { words, name } = this.state;
     return (
       <div className="App">
-        <Game name={name} words={words} />
+        <Game name={name} words={words} path="/game"/>
       </div>
     );
   }
