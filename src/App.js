@@ -1,5 +1,5 @@
 import "./App.css";
-import Game from "./components/Game";
+import Game from "./components/Game/Game";
 import React, { Component } from "react";
 
 export default class App extends Component {
@@ -20,7 +20,7 @@ export default class App extends Component {
         { cow: "vache" },
         { dog: "chien" },
       ],
-      Spanish: [{ cat: "die Katze" }],
+      Spanish: [{ moose: "cie moose" }],
     },
   };
   render() {

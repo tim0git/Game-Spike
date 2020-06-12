@@ -1,5 +1,7 @@
 import React, { Component } from "react";
 import axios from "axios";
+import GameStartComponent from "./GameStartComponent";
+import GameRunning from "./GameRunning";
 
 export default class Game extends Component {
   state = {
@@ -40,12 +42,14 @@ export default class Game extends Component {
       return {
         word: word,
         transWord: transWord,
-        isLoading: true,
+        isLoading: !currentState.isLoading,
       };
     });
   };
 
   componentDidUpdate = (prevProps, prevState) => {
+    console.log("updating");
+
     if (prevState.word !== this.state.word) {
       this.getAssociatedWords();
     }
@@ -74,7 +78,7 @@ export default class Game extends Component {
         this.setState((currentState) => {
           return {
             associatedWords: [...wordsArray],
-            isLoading: false,
+            isLoading: !currentState.isLoading,
           };
         });
       });
@@ -89,6 +93,14 @@ export default class Game extends Component {
     this.getWord();
   };
 
+  handleStart = (e) => {
+    this.setState({ isStarted: true });
+  };
+
+  resetIsStarted = () => {
+    this.setState({ isStarted: false });
+  };
+
   render() {
     const { name } = this.props;
     const {
@@ -96,46 +108,43 @@ export default class Game extends Component {
       associatedWords,
       transWord,
       isLoading,
+      isStarted,
       language,
     } = this.state;
-    const Loading = <>Loading...</>;
+    const { words } = this.props;
+
+    const enoughWordsToPlay = words[language].length >= 2;
+
     return (
       <div>
-        <h3>Game {name}</h3>
-        <p>Language: {language}</p>
-        <select onChange={this.handleSelectedLanguage}>
-          <option default value="">
-            Please select from below...
-          </option>
-          <option default value="German">
-            German
-          </option>
-          <option value="French">French</option>
-          <option value="Spanish">Spanish</option>
-        </select>
-        <p>The word is {transWord}</p>
-        <p> tim's little helper {word}</p>
-        {isLoading
-          ? Loading
-          : associatedWords.map((wordObj) => {
-              return (
-                <div key={wordObj.item}>
-                  <input
-                    type="radio"
-                    id={wordObj.item}
-                    name={wordObj.item}
-                    value={wordObj.item}
-                    onClick={(e) => this.playGame(e)}
-                  />
-                  <span>{wordObj.item}</span>
-                </div>
-              );
-            })}
+        {isStarted ? (
+          <GameRunning
+            isLoading={isLoading}
+            transWord={transWord}
+            associatedWords={associatedWords}
+            word={word}
+            playGame={this.playGame}
+            resetIsStarted={this.resetIsStarted}
+          />
+        ) : (
+          <GameStartComponent
+            name={name}
+            language={language}
+            handleSelectedLanguage={this.handleSelectedLanguage}
+            handleStart={this.handleStart}
+            enoughWordsToPlay={enoughWordsToPlay}
+          />
+        )}
       </div>
     );
   }
 }
 
-// sort one word list with a conditional render
-// sort array destructuring / data manipulation.
+
 // create new route & deploy backend to return the correct word in the array.
+
+// component updating errors mystery bug.
+// win loss components.
+
+//Refactor at some point.
+// sort array destructuring / data manipulation.
