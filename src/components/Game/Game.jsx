@@ -13,113 +13,7 @@ export default class Game extends Component {
     isLoading: false,
     isStarted: false,
     openAlert: false,
-    alertMessage: "",
-  };
-
-  componentDidMount = () => {
-    this.getWord();
-  };
-
-  onTimeout = () => {
-    setTimeout(() => {
-      this.setState({ openAlert: false });
-    }, 2000);
-  };
-
-  getRandomIndex = () => {
-    const { words } = this.props;
-    const { language } = this.state;
-    const randomListItem = Math.floor(Math.random() * words[language].length);
-    this.setState({ wordIndex: randomListItem });
-    return randomListItem;
-  };
-
-  getWord = () => {
-    const { words } = this.props;
-
-    const { language } = this.state;
-
-    const randomListItem = this.getRandomIndex();
-
-    const word = `${Object.keys(words[language][randomListItem])}`;
-    console.log(word);
-    const transWord = `${Object.values(words[language][randomListItem])}`;
-
-    this.setState((currentState) => {
-      return {
-        word: word,
-        transWord: transWord,
-        isLoading: !currentState.isLoading,
-      };
-    });
-  };
-
-  componentDidUpdate = (prevProps, prevState) => {
-    if (prevState.word !== this.state.word) {
-      this.getAssociatedWords();
-    }
-    if (
-      prevState.wordIndex === this.state.wordIndex &&
-      this.state.isLoading === true
-    ) {
-      console.log("wordIndex");
-      this.setState({ isLoading: false });
-    }
-    if (prevState.language !== this.state.language) {
-      this.getWord();
-    }
-    if (prevState.openAlert !== this.state.openAlert) {
-      this.onTimeout();
-    }
-  };
-
-  getAssociatedWords = () => {
-    const { word } = this.state;
-    const body = {
-      text: word,
-      lang: "en",
-      filter: "noun",
-    };
-    axios
-      .post("https://langsnap-be.herokuapp.com/api/associations/game", body)
-      .then((res) => {
-        const { wordsArray } = res.data.message;
-        this.setState((currentState) => {
-          return {
-            associatedWords: [...wordsArray],
-            isLoading: !currentState.isLoading,
-          };
-        });
-      });
-  };
-
-  handleSelectedLanguage = (event) => {
-    const { value } = event.target;
-    this.setState({ language: value });
-  };
-
-  playGame = (e) => {
-    const idTarget = e.target.id.toLowerCase();
-    if (idTarget === this.state.word) {
-      this.setState({
-        openAlert: true,
-        alertMessage: `${idTarget} well done!`,
-      });
-    } else {
-      this.setState({
-        openAlert: true,
-        alertMessage: `${idTarget} wrong!`,
-      });
-    }
-    this.getWord();
-  };
-
-  handleStart = (e) => {
-    this.setState({ isStarted: true });
-  };
-
-  resetIsStarted = () => {
-    this.setState({ isStarted: false });
+    alertMessage: null,
   };
 
   render() {
@@ -163,6 +57,121 @@ export default class Game extends Component {
       </div>
     );
   }
+
+  componentDidMount = () => {
+    this.getWord();
+  };
+
+  componentDidUpdate = (prevProps, prevState) => {
+    // console.log("update called");
+
+    if (prevState.word !== this.state.word) {
+      console.log("new word");
+      this.getAssociatedWords();
+    }
+
+    if (prevState.language !== this.state.language) {
+      console.log("new language");
+      this.getWord();
+    }
+
+    if (this.state.alertMessage !== null) {
+      console.log("set time out");
+      this.onTimeout();
+    }
+  };
+
+  onTimeout = () => {
+    setTimeout(() => {
+      this.getWord();
+    }, 2500);
+  };
+
+  // Extract to utils?
+  getRandomIndex = () => {
+    const { words } = this.props;
+    const { language } = this.state;
+    const wordsLength = words[language].length;
+    let randomListItem = Math.floor(Math.random() * wordsLength);
+    if (randomListItem === this.state.wordIndex) {
+      if (randomListItem === wordsLength) {
+        randomListItem--;
+      } else {
+        randomListItem++;
+      }
+    }
+    return randomListItem;
+  };
+
+  // Rename to setNewWord or something more semantic?
+  getWord = () => {
+    const { words } = this.props;
+    const { language } = this.state;
+    const randomIndex = this.getRandomIndex();
+    const word = `${Object.keys(words[language][randomIndex])}`;
+    const transWord = `${Object.values(words[language][randomIndex])}`;
+
+    this.setState((currentState) => {
+      return {
+        word: word,
+        transWord: transWord,
+        isLoading: !currentState.isLoading,
+        wordIndex: randomIndex,
+        openAlert: false,
+        alertMessage: null,
+      };
+    });
+  };
+
+  // Extract to api file in Langsnap React app
+  getAssociatedWords = () => {
+    const { word } = this.state;
+    const body = {
+      text: word,
+      lang: "en",
+    };
+    axios
+      .post("https://langsnap-be.herokuapp.com/api/associations/game", body)
+      .then(({ data: { message } }) => {
+        const { wordsArray } = message;
+        this.setState((currentState) => {
+          return {
+            associatedWords: [...wordsArray],
+            isLoading: !currentState.isLoading,
+          };
+        });
+      });
+  };
+
+  handleSelectedLanguage = (event) => {
+    const { value } = event.target;
+    this.setState({ language: value });
+  };
+
+  playGame = (e) => {
+    const idTarget = e.target.id.toLowerCase();
+    if (idTarget === this.state.word) {
+      this.setState({
+        openAlert: true,
+        alertMessage: `${idTarget} well done!`,
+      });
+    } else {
+      this.setState({
+        openAlert: true,
+        alertMessage: `${idTarget} wrong!`,
+      });
+    }
+  };
+
+  // refactor these two functions to pass in true or false?
+  handleStart = (e) => {
+    this.setState({ isStarted: true });
+  };
+
+  // see above
+  resetIsStarted = () => {
+    this.setState({ isStarted: false });
+  };
 }
 
 // displaying same word twice..
